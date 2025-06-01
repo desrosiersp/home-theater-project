@@ -1,0 +1,40 @@
+{
+  "receivers": [
+    {
+      "brand": "Denon",
+      "model": "AVR-X3700H",
+      "channels": 9.2,
+      "power": "105W per channel",
+      "dolbyAtmos": true,
+      "dtsx": true,
+      "dimensions": {"width": 17.1, "height": 6.6, "depth": 15.3},
+      "weight": 27.6,
+      "amazonLink": "affiliate-link-here",
+      "imageUrl": "image-link-here"
+    },
+    {
+      "brand": "Marantz",
+      "model": "SR6015",
+      "channels": 9.2,
+      "power": "110W per channel",
+      "dolbyAtmos": true,
+      "dtsx": true,
+      "dimensions": {"width": 17.3, "height": 6.3, "depth": 15.7},
+      "weight": 28.2,
+      "amazonLink": "affiliate-link-here",
+      "imageUrl": "image-link-here"
+    },
+    {
+      "brand": "Yamaha",
+      "model": "RX-A6A",
+      "channels": 9.2,
+      "power": "150W per channel",
+      "dolbyAtmos": true,
+      "dtsx": true,
+      "dimensions": {"width": 17.125, "height": 7.5, "depth": 18.625},
+      "weight": 41.2,
+      "amazonLink": "affiliate-link-here",
+      "imageUrl": "image-link-here"
+    }
+  ]
+}

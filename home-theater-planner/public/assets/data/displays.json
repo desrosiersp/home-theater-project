@@ -1,0 +1,48 @@
+{
+  "displays": [
+    {
+      "id": "lg-c3-77",
+      "brand": "LG",
+      "model": "C3 OLED 77\"",
+      "type": "OLED TV",
+      "size": 77,
+      "resolution": "4K",
+      "hdrSupport": ["Dolby Vision", "HDR10", "HLG"],
+      "amazonLink": "affiliate-link-here",
+      "imageUrl": "image-link-here"
+    },
+    {
+      "id": "sony-a95k-65",
+      "brand": "Sony",
+      "model": "A95K QD-OLED 65\"",
+      "type": "QD-OLED TV",
+      "size": 65,
+      "resolution": "4K",
+      "hdrSupport": ["Dolby Vision", "HDR10", "HLG"],
+      "amazonLink": "affiliate-link-here",
+      "imageUrl": "image-link-here"
+    },
+    {
+      "id": "epson-5050ub",
+      "brand": "Epson",
+      "model": "Home Cinema 5050UB",
+      "type": "Projector",
+      "resolution": "4K PRO-UHD (Pixel Shifting)",
+      "brightnessLumens": 2600,
+      "hdrSupport": ["HDR10", "HLG"],
+      "amazonLink": "affiliate-link-here",
+      "imageUrl": "image-link-here"
+    },
+    {
+      "id": "jvc-nx7",
+      "brand": "JVC",
+      "model": "DLA-NX7",
+      "type": "Projector",
+      "resolution": "Native 4K",
+      "brightnessLumens": 1900,
+      "hdrSupport": ["HDR10", "HLG"],
+      "amazonLink": "affiliate-link-here",
+      "imageUrl": "image-link-here"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "dolbyAtmos": {
+    "placementRules": [
+      {
+        "configuration": "5.1.2",
+        "description": "Base 5.1 layer with 2 height channels.",
+        "speakerAngles": {
+          "frontLeft": "22-30 degrees",
+          "frontRight": "22-30 degrees",
+          "center": "0 degrees",
+          "surroundLeft": "90-110 degrees",
+          "surroundRight": "90-110 degrees",
+          "topLeftFront": "Relative to listening position, 45 degrees elevation",
+          "topRightFront": "Relative to listening position, 45 degrees elevation"
+        }
+      },
+      {
+        "configuration": "7.1.4",
+        "description": "Base 7.1 layer with 4 height channels.",
+        "speakerAngles": {
+          "frontLeft": "22-30 degrees",
+          "frontRight": "22-30 degrees",
+          "center": "0 degrees",
+          "surroundLeft": "90-110 degrees",
+          "surroundRight": "90-110 degrees",
+          "rearSurroundLeft": "135-150 degrees",
+          "rearSurroundRight": "135-150 degrees",
+          "topLeftFront": "Relative to listening position, 30-55 degrees elevation, 0-45 degrees azimuth",
+          "topRightFront": "Relative to listening position, 30-55 degrees elevation, 0-45 degrees azimuth",
+          "topLeftRear": "Relative to listening position, 30-55 degrees elevation, 135-180 degrees azimuth",
+          "topRightRear": "Relative to listening position, 30-55 degrees elevation, 135-180 degrees azimuth"
+        }
+      }
+    ],
+    "generalRecommendations": {
+      "listeningPosition": "Avoid placing listening position directly against a wall.",
+      "speakerHeight": "Ear-level for seated listeners for base layer speakers."
+    }
+  },
+  "otherStandards": []
+}

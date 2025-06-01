@@ -1,0 +1,52 @@
+[
+  {
+    "id": "ht001",
+    "slug": "choosing-your-first-av-receiver",
+    "title": "Choosing Your First AV Receiver: A Beginner's Guide",
+    "datePublished": "2025-05-30T10:00:00Z",
+    "author": "Jane Audiophile",
+    "featuredImage": "/assets/images/placeholder-receiver.jpg",
+    "summary": "Navigate the complex world of AV receivers. Learn about channels, power, features like Dolby Atmos, and how to pick the right one for your needs and budget.",
+    "content": "## Introduction\n\nChoosing an AV Receiver can be daunting. This guide will simplify it.\n\n### Key Considerations\n\n*   **Channels:** How many speakers will you have? 5.1, 7.1, or Atmos (e.g., 5.1.2)?\n*   **Power (Watts per Channel):** Match this to your speakers' sensitivity and room size.\n*   **Video Passthrough:** 4K, 8K, HDR, Dolby Vision support.\n*   **Audio Formats:** Dolby Atmos, DTS:X are key for immersive audio.\n*   **Connectivity:** HDMI inputs/outputs, Wi-Fi, Bluetooth.\n\n## Top Picks for Beginners\n\n*   **Budget Friendly:** [Brand X Model A](https://example.com/affiliate/brandx-a) - Great value.\n*   **Mid-Range Powerhouse:** [Brand Y Model B](https://example.com/affiliate/brandy-b) - Excellent features for the price.\n\n*(More content here...)*",
+    "tags": ["av receiver", "beginner", "dolby atmos", "home audio"],
+    "affiliateProducts": [
+      {
+        "productName": "Brand X Model A Receiver",
+        "productImage": "/assets/images/placeholder-receiver-brandx.jpg",
+        "affiliateLink": "https://example.com/affiliate/brandx-a",
+        "description": "A solid entry-level receiver with good basic features."
+      },
+      {
+        "productName": "Brand Y Model B Receiver",
+        "productImage": "/assets/images/placeholder-receiver-brandy.jpg",
+        "affiliateLink": "https://example.com/affiliate/brandy-b",
+        "description": "Offers more power and advanced audio format support."
+      }
+    ]
+  },
+  {
+    "id": "ht002",
+    "slug": "basic-speaker-placement-for-5-1-setup",
+    "title": "Basic Speaker Placement for a 5.1 Surround Sound Setup",
+    "datePublished": "2025-05-28T14:30:00Z",
+    "author": "John Soundguy",
+    "featuredImage": "/assets/images/placeholder-speakers.jpg",
+    "summary": "Learn the fundamentals of placing your front, center, surround, and subwoofer speakers for an optimal 5.1 channel home theater experience.",
+    "content": "## Understanding 5.1\n\nA 5.1 system has:\n\n*   **Front Left & Right:** For main stereo imaging.\n*   **Center Channel:** Primarily for dialogue.\n*   **Surround Left & Right:** For ambient sounds and effects.\n*   **Subwoofer (.1):** For Low-Frequency Effects (LFE).\n\n### Placement Tips\n\n*   **Fronts:** Equidistant from the listening position, forming an equilateral triangle.\n*   **Center:** Directly above or below your display, angled towards the listener.\n*   **Surrounds:** To the sides and slightly behind the listening position, typically at ear level or slightly above.\n*   **Subwoofer:** Placement can be tricky (corner, crawl test). Experiment for best results.\n\n*(More details and diagrams...)*",
+    "tags": ["speaker placement", "5.1 surround", "home theater setup"],
+    "affiliateProducts": [
+      {
+        "productName": "Affordable Bookshelf Speakers (Pair)",
+        "productImage": "/assets/images/placeholder-bookshelf.jpg",
+        "affiliateLink": "https://example.com/affiliate/bookshelf-speakers",
+        "description": "Great for front or surround channels in a budget setup."
+      },
+      {
+        "productName": "Entry-Level Subwoofer",
+        "productImage": "/assets/images/placeholder-subwoofer.jpg",
+        "affiliateLink": "https://example.com/affiliate/subwoofer-entry",
+        "description": "Adds that essential low-end punch to your system."
+      }
+    ]
+  }
+]

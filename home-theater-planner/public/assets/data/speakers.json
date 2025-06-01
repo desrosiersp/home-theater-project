@@ -1,0 +1,40 @@
+{
+  "speakers": [
+    {
+      "brand": "ELAC",
+      "model": "Debut 2.0 B6.2",
+      "type": "Bookshelf",
+      "sensitivity": 87,
+      "impedance": 6,
+      "recommendedPower": "30-120W",
+      "dimensions": {"width": 7.69, "height": 14.76, "depth": 10.55},
+      "weight": 16.3,
+      "amazonLink": "affiliate-link-here",
+      "imageUrl": "image-link-here"
+    },
+    {
+      "brand": "KEF",
+      "model": "Q150",
+      "type": "Bookshelf",
+      "sensitivity": 86,
+      "impedance": 8,
+      "recommendedPower": "10-100W",
+      "dimensions": {"width": 7.08, "height": 11.92, "depth": 10.94},
+      "weight": 12.3,
+      "amazonLink": "affiliate-link-here",
+      "imageUrl": "image-link-here"
+    },
+    {
+      "brand": "Klipsch",
+      "model": "RP-600M",
+      "type": "Bookshelf",
+      "sensitivity": 96,
+      "impedance": 8,
+      "recommendedPower": "100W / 400W Peak",
+      "dimensions": {"width": 7.95, "height": 15.69, "depth": 11.85},
+      "weight": 16,
+      "amazonLink": "affiliate-link-here",
+      "imageUrl": "image-link-here"
+    }
+  ]
+}

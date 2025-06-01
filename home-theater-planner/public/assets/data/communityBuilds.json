@@ -1,0 +1,57 @@
+{
+  "builds": [
+    {
+      "id": "build-001",
+      "title": "Ultimate Cinema Room",
+      "author": "@AudioPhile_Mike",
+      "description": "A no-compromise setup for the ultimate movie experience.",
+      "speakerConfig": "7.2.4",
+      "roomDimensions": { "width": 6, "length": 8, "height": 3 }, "unit": "meters",
+      "mainSpeakers": "Klipsch RP-8000F",
+      "centerSpeaker": "Klipsch RP-504C",
+      "surroundSpeakers": "Klipsch RP-502S",
+      "atmosSpeakers": "Klipsch CDT-5800-C II",
+      "subwoofers": "SVS PB-3000 (Dual)",
+      "receiver": "Denon AVR-X6700H",
+      "display": "JVC DLA-NX7 Projector with 150\" Screen",
+      "budgetTier": "$$$$$ (High-End)",
+      "votes": 127,
+      "imageUrl": "/assets/images/placeholder-build1.jpg" 
+    },
+    {
+      "id": "build-002",
+      "title": "Budget 5.1 Living Room Setup",
+      "author": "@ThriftyTheater",
+      "description": "Great sound on a budget, perfect for a multi-purpose living room.",
+      "speakerConfig": "5.1",
+      "roomDimensions": { "width": 4, "length": 5, "height": 2.5 }, "unit": "meters",
+      "mainSpeakers": "ELAC Debut 2.0 B6.2",
+      "centerSpeaker": "ELAC Debut 2.0 C5.2",
+      "surroundSpeakers": "ELAC Debut 2.0 B5.2",
+      "subwoofers": "SVS SB-1000 Pro",
+      "receiver": "Denon AVR-S760H",
+      "display": "LG C2 OLED 65\"",
+      "budgetTier": "$$ (Budget-Friendly)",
+      "votes": 89,
+      "imageUrl": "/assets/images/placeholder-build2.jpg"
+    },
+    {
+      "id": "build-003",
+      "title": "Compact Apartment Atmos",
+      "author": "@CityDwellerSound",
+      "description": "Immersive Atmos sound in a smaller apartment space.",
+      "speakerConfig": "5.1.2",
+      "roomDimensions": { "width": 3.5, "length": 4.5, "height": 2.4 }, "unit": "meters",
+      "mainSpeakers": "KEF Q150",
+      "centerSpeaker": "KEF Q250c",
+      "surroundSpeakers": "KEF Q150",
+      "atmosSpeakers": "SVS Prime Elevation (Up-firing)",
+      "subwoofers": "KEF KUBE 10b",
+      "receiver": "Marantz NR1711",
+      "display": "Sony X90J 55\" TV",
+      "budgetTier": "$$$ (Mid-Range)",
+      "votes": 156,
+      "imageUrl": "/assets/images/placeholder-build3.jpg"
+    }
+  ]
+}
