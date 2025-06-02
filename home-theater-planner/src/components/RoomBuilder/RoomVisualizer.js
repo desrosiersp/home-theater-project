@@ -8,25 +8,26 @@ import { calculateSpeakerPositions } from '../../utils/dolbyAtmosRules';
 
 const RoomVisualizer = () => {
   const { 
-    roomDimensionsMeters, 
-    getDimensionsInCurrentUnit, 
-    unitSystem, 
+    roomDimensionsMeters,
+    getDimensionsInCurrentUnit,
+    unitSystem,
     selectedModeForVisualization,
-    manualSpeakerPositions, // New from context
-    updateManualSpeakerPosition, // New from context
-    resetManualSpeakerPositions  // New from context
-  } = useRoomContext(); 
+    manualSpeakerPositions,
+    updateManualSpeakerPosition,
+    resetManualSpeakerPositions,
+    wallFeatures, // Added wallFeatures
+  } = useRoomContext();
   const { speakerConfiguration } = useComponentContext();
-  
-  const [calculatedSpeakers, setCalculatedSpeakers] = useState([]); // Store initially calculated positions
+
+  const [calculatedSpeakers, setCalculatedSpeakers] = useState([]);
   const [refreshKey, setRefreshKey] = useState(0);
   
   // Drag state
   const [draggingSpeakerId, setDraggingSpeakerId] = useState(null);
-  const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 }); // Mouse start
-  const svgRef = useRef(null); // Ref for SVG element to get its position/size
+  const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
+  const svgRef = useRef(null);
 
-  const { width: widthMeters, length: lengthMeters } = roomDimensionsMeters;
+  const { width: widthMeters, length: lengthMeters, height: heightMeters } = roomDimensionsMeters; // Added heightMeters
 
   // Calculate initial speaker positions or when dependencies change
   const calculateAndSetInitialSpeakers = useCallback(() => {
@@ -156,8 +157,97 @@ const RoomVisualizer = () => {
           style={{ border: '1px solid black', backgroundColor: '#f0f0f0', display: 'block', margin: 'auto', position: 'relative', cursor: draggingSpeakerId ? 'grabbing' : 'default' }}
         >
           <rect x="0" y="0" width={vizWidth} height={vizHeight} fill="#e0e0e0" stroke="black" />
-          
-          {/* Mode Visualization Layer (same as before) */}
+
+          {/* Wall Features Layer */}
+          <g id="wall-features-layer">
+            {wallFeatures.map((feature) => {
+              const featX = feature.startOffset * currentScale;
+              const featWidth = feature.width * currentScale;
+              const doorThickness = 4; // px
+              const windowStrokeColor = 'cornflowerblue';
+              const openingStrokeColor = 'darkgrey';
+              const doorStrokeColor = 'saddlebrown';
+              const doorFillColor = 'peru';
+
+              let elements = [];
+
+              // Wall 0: North (Top), Wall 1: East (Right), Wall 2: South (Bottom), Wall 3: West (Left)
+              switch (feature.wallIndex) {
+                case 0: // North Wall (Top)
+                  if (feature.type === 'opening') {
+                    elements.push(<line key={`${feature.id}-line`} x1={featX} y1="0" x2={featX + featWidth} y2="0" stroke={openingStrokeColor} strokeWidth="6" />);
+                  } else if (feature.type === 'window') {
+                    elements.push(<rect key={`${feature.id}-rect`} x={featX} y="0" width={featWidth} height={doorThickness * 1.5} fill="lightblue" stroke={windowStrokeColor} strokeWidth="1" />);
+                  } else if (feature.type === 'door') {
+                    elements.push(<rect key={`${feature.id}-door`} x={featX} y={-(doorThickness / 2)} width={featWidth} height={doorThickness} fill={doorFillColor} stroke={doorStrokeColor} />);
+                    // Basic swing arc (simplified: always inward 90deg for now)
+                    const hingeX = feature.doorHingeSide === 'left' ? featX : featX + featWidth;
+                    const arcEndX = feature.doorHingeSide === 'left' ? featX + featWidth : featX;
+                    // Path: M (hinge) L (knob-side-open) A (radius radius 0 0 sweep-flag knob-side-closed)
+                    // This is a simplified representation
+                     if (feature.doorSwing?.includes('inward')) {
+                        elements.push(<path key={`${feature.id}-arc`} d={`M ${hingeX} 0 L ${hingeX} ${featWidth * 0.8} M ${hingeX} 0 A ${featWidth} ${featWidth} 0 0 ${feature.doorHingeSide === 'left' ? 1:0} ${arcEndX} ${featWidth* (feature.doorHingeSide === 'left' ? 0.3 : -0.3)}`} stroke={doorStrokeColor} strokeDasharray="2,2" fill="none"/>);
+                     } else { // outward
+                        elements.push(<path key={`${feature.id}-arc`} d={`M ${hingeX} 0 L ${hingeX} ${-featWidth * 0.8} M ${hingeX} 0 A ${featWidth} ${featWidth} 0 0 ${feature.doorHingeSide === 'left' ? 0:1} ${arcEndX} ${-featWidth* (feature.doorHingeSide === 'left' ? 0.3 : -0.3)}`} stroke={doorStrokeColor} strokeDasharray="2,2" fill="none"/>);
+                     }
+                  }
+                  break;
+                case 1: // East Wall (Right)
+                  if (feature.type === 'opening') {
+                    elements.push(<line key={`${feature.id}-line`} x1={vizWidth} y1={featX} x2={vizWidth} y2={featX + featWidth} stroke={openingStrokeColor} strokeWidth="6" />);
+                  } else if (feature.type === 'window') {
+                    elements.push(<rect key={`${feature.id}-rect`} x={vizWidth - (doorThickness * 1.5)} y={featX} width={doorThickness * 1.5} height={featWidth} fill="lightblue" stroke={windowStrokeColor} strokeWidth="1" />);
+                  } else if (feature.type === 'door') {
+                    elements.push(<rect key={`${feature.id}-door`} x={vizWidth - (doorThickness/2)} y={featX} width={doorThickness} height={featWidth} fill={doorFillColor} stroke={doorStrokeColor} />);
+                     const hingeY = feature.doorHingeSide === 'left' ? featX : featX + featWidth; // 'left' means top hinge for vertical door
+                     const arcEndY = feature.doorHingeSide === 'left' ? featX + featWidth : featX;
+                     if (feature.doorSwing?.includes('inward')) { // inward means to the left for a right wall door
+                        elements.push(<path key={`${feature.id}-arc`} d={`M ${vizWidth} ${hingeY} L ${vizWidth - featWidth * 0.8} ${hingeY} M ${vizWidth} ${hingeY} A ${featWidth} ${featWidth} 0 0 ${feature.doorHingeSide === 'left' ? 1:0} ${vizWidth - featWidth * (feature.doorHingeSide === 'left' ? 0.3 : -0.3)} ${arcEndY}`} stroke={doorStrokeColor} strokeDasharray="2,2" fill="none"/>);
+                     } else { // outward
+                        elements.push(<path key={`${feature.id}-arc`} d={`M ${vizWidth} ${hingeY} L ${vizWidth + featWidth * 0.8} ${hingeY} M ${vizWidth} ${hingeY} A ${featWidth} ${featWidth} 0 0 ${feature.doorHingeSide === 'left' ? 0:1} ${vizWidth + featWidth * (feature.doorHingeSide === 'left' ? 0.3 : -0.3)} ${arcEndY}`} stroke={doorStrokeColor} strokeDasharray="2,2" fill="none"/>);
+                     }
+                  }
+                  break;
+                case 2: // South Wall (Bottom)
+                  if (feature.type === 'opening') {
+                    elements.push(<line key={`${feature.id}-line`} x1={featX} y1={vizHeight} x2={featX + featWidth} y2={vizHeight} stroke={openingStrokeColor} strokeWidth="6" />);
+                  } else if (feature.type === 'window') {
+                    elements.push(<rect key={`${feature.id}-rect`} x={featX} y={vizHeight - (doorThickness*1.5)} width={featWidth} height={doorThickness * 1.5} fill="lightblue" stroke={windowStrokeColor} strokeWidth="1" />);
+                  } else if (feature.type === 'door') {
+                    elements.push(<rect key={`${feature.id}-door`} x={featX} y={vizHeight - (doorThickness/2)} width={featWidth} height={doorThickness} fill={doorFillColor} stroke={doorStrokeColor} />);
+                    const hingeX = feature.doorHingeSide === 'left' ? featX : featX + featWidth;
+                    const arcEndX = feature.doorHingeSide === 'left' ? featX + featWidth : featX;
+                     if (feature.doorSwing?.includes('inward')) { // inward means upward for south wall
+                        elements.push(<path key={`${feature.id}-arc`} d={`M ${hingeX} ${vizHeight} L ${hingeX} ${vizHeight - featWidth * 0.8} M ${hingeX} ${vizHeight} A ${featWidth} ${featWidth} 0 0 ${feature.doorHingeSide === 'left' ? 0:1} ${arcEndX} ${vizHeight - featWidth* (feature.doorHingeSide === 'left' ? 0.3 : -0.3)}`} stroke={doorStrokeColor} strokeDasharray="2,2" fill="none"/>);
+                     } else { // outward
+                        elements.push(<path key={`${feature.id}-arc`} d={`M ${hingeX} ${vizHeight} L ${hingeX} ${vizHeight + featWidth * 0.8} M ${hingeX} ${vizHeight} A ${featWidth} ${featWidth} 0 0 ${feature.doorHingeSide === 'left' ? 1:0} ${arcEndX} ${vizHeight + featWidth* (feature.doorHingeSide === 'left' ? 0.3 : -0.3)}`} stroke={doorStrokeColor} strokeDasharray="2,2" fill="none"/>);
+                     }
+                  }
+                  break;
+                case 3: // West Wall (Left)
+                   if (feature.type === 'opening') {
+                    elements.push(<line key={`${feature.id}-line`} x1="0" y1={featX} x2="0" y2={featX + featWidth} stroke={openingStrokeColor} strokeWidth="6" />);
+                  } else if (feature.type === 'window') {
+                    elements.push(<rect key={`${feature.id}-rect`} x="0" y={featX} width={doorThickness * 1.5} height={featWidth} fill="lightblue" stroke={windowStrokeColor} strokeWidth="1" />);
+                  } else if (feature.type === 'door') {
+                    elements.push(<rect key={`${feature.id}-door`} x={-(doorThickness/2)} y={featX} width={doorThickness} height={featWidth} fill={doorFillColor} stroke={doorStrokeColor} />);
+                    const hingeY = feature.doorHingeSide === 'left' ? featX : featX + featWidth; // 'left' means top hinge
+                    const arcEndY = feature.doorHingeSide === 'left' ? featX + featWidth : featX;
+                     if (feature.doorSwing?.includes('inward')) { // inward means to the right
+                        elements.push(<path key={`${feature.id}-arc`} d={`M 0 ${hingeY} L ${featWidth * 0.8} ${hingeY} M 0 ${hingeY} A ${featWidth} ${featWidth} 0 0 ${feature.doorHingeSide === 'left' ? 0:1} ${featWidth * (feature.doorHingeSide === 'left' ? 0.3 : -0.3)} ${arcEndY}`} stroke={doorStrokeColor} strokeDasharray="2,2" fill="none"/>);
+                     } else { // outward
+                        elements.push(<path key={`${feature.id}-arc`} d={`M 0 ${hingeY} L ${-featWidth * 0.8} ${hingeY} M 0 ${hingeY} A ${featWidth} ${featWidth} 0 0 ${feature.doorHingeSide === 'left' ? 1:0} ${-featWidth * (feature.doorHingeSide === 'left' ? 0.3 : -0.3)} ${arcEndY}`} stroke={doorStrokeColor} strokeDasharray="2,2" fill="none"/>);
+                     }
+                  }
+                  break;
+                default:
+                  break;
+              }
+              return elements;
+            })}
+          </g>
+
+          {/* Mode Visualization Layer */}
           {selectedModeForVisualization && selectedModeForVisualization.dimension && selectedModeForVisualization.order && widthMeters > 0 && lengthMeters > 0 && (
             <g id="mode-visualization-layer">
               {(() => {

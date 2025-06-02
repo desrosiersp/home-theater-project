@@ -1,4 +1,5 @@
 import React from 'react';
+import { Stack } from '@mui/material'; // Import Stack
 import MainLayout from '../components/Layout/MainLayout';
 import { RoomProvider } from '../context/RoomContext';
 import { ComponentProvider } from '../context/ComponentContext';
@@ -15,10 +16,11 @@ import DisplaySelector from '../components/ComponentSelector/DisplaySelector';
 import TargetSPLSlider from '../components/ComponentSelector/TargetSPLSlider';
 import ModeVisualizationSelector from '../components/AcousticsCalculator/ModeVisualizationSelector';
 import HeightInput from '../components/RoomBuilder/HeightInput';
+import WallFeatureEditor from '../components/RoomBuilder/WallFeatureEditor'; // Added import
 
 function PlannerPage() {
   const sidebarContent = (
-    <>
+    <Stack spacing={2}> {/* Wrap content in a Stack with spacing */}
       <RoomNameInput />
       <RoomDimensionInput />
       <SpeakerConfigurationSelector />
@@ -28,8 +30,9 @@ function PlannerPage() {
       <TargetSPLSlider />
       <ModeVisualizationSelector />
       <HeightInput />
+      <WallFeatureEditor /> {/* Moved WallFeatureEditor back to the bottom */}
       {/* Other sidebar controls would go here if they existed in original App.js */}
-    </>
+    </Stack>
   );
 
   const roomDesignTabContent = (

@@ -1,6 +1,6 @@
 # Project Progress: Home Theater Planner
 
-## Date: May 31, 2025
+## Date: June 1, 2025
 
 ## 1. Current Overall Status
 
@@ -16,6 +16,7 @@ The project has a solid foundational structure with many core MVP features imple
   - Room naming (`RoomNameInput.js`).
   - Room dimensions input with Meters/Feet toggle (`RoomDimensionInput.js`).
   - Listener and front speaker height inputs with unit toggle (`HeightInput.js`).
+  - Wall Feature Editor (`WallFeatureEditor.js`) for defining doors, openings, and simplified windows on perimeter walls.
 - **Component Selection (Sidebar):**
   - Speaker configuration selection (`SpeakerConfigurationSelector.js`).
   - Speaker model selection (role-based, e.g., Front L/R, Center) (`SpeakerModelSelector.js`).
@@ -27,6 +28,7 @@ The project has a solid foundational structure with many core MVP features imple
   - Automatic speaker placement based on Dolby rules (`dolbyAtmosRules.js`).
   - Interactive drag & drop for manual speaker/LP positioning.
   - Visual overlay for selected axial room modes.
+  - Visualization of defined wall features (doors, openings, windows).
   - "Reset Layout" and basic "Auto-Optimize" buttons.
 - **Power & SPL Tab (`CalculationsDisplay.js`):**
   - Displays Room Volume, Listening Distance (dynamic), Required Power, Max SPL, and estimated Total Power Draw.
@@ -40,15 +42,17 @@ The project has a solid foundational structure with many core MVP features imple
   - Accessible via global AppBar (`/build-blogs` route).
   - Displays community builds using `BuildBlogListPage.js` which renders `CommunityBuildsTab.js` (now context-agnostic for display).
 - **Sharing (Local - Planner):**
-  - Save/Load designs to/from browser local storage (`StorageContext.js`, `SaveDesignDialog.js`, `LoadDesignDialog.js`).
+  - Save/Load designs to/from browser local storage (`StorageContext.js`, `SaveDesignDialog.js`, `LoadDesignDialog.js`), now including wall features.
   - **Bug Fix:** Corrected Context Provider order in `App.js` to resolve issues with saving designs.
 - **Data Files:** JSON files for speakers, receivers, displays, standards, and community builds are present.
+- **Dependency Health:**
+  - Resolved critical npm audit vulnerabilities (related to `nth-check` and `postcss`) by implementing `overrides` in `package.json`.
 
 ## 3. What's Left to Build (High-Level Remaining Tasks from Roadmap)
 
 - **Enhance "Room Design" Tab Interactivity:**
-  - Implement Wall/Door/Window placement for more complex room shapes.
-  - Develop advanced logic for the "Auto-Optimize" button.
+  - ~~Implement Wall/Door/Window placement for more complex room shapes.~~ (Part 1: Basic wall features on perimeter walls - DONE)
+  - Develop advanced LP-based logic for the "Auto-Optimize" button, considering wall features.
 - **Further "Basic Sharing Functionality":**
   - Implement Configuration Export (JSON file download).
   - Implement Image Export of Room Layout (SVG to PNG/SVG).
@@ -98,6 +102,7 @@ The project has a solid foundational structure with many core MVP features imple
   - Local save/load functionality.
   - Interactive drag-and-drop speaker placement.
   - Basic community builds display (now on "Build Blogs" page).
+  - Addition of Wall Feature definition and visualization.
 - Adoption of the Memory Bank system (`.clinerules`) for ongoing documentation.
 - Standardization of project name to "Home Theater Planner".
 - Corrected Context Provider order in `App.js`.

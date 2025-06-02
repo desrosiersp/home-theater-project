@@ -45,6 +45,7 @@ export const StorageProvider = ({ children }) => {
       listenerEarHeightMeters: roomCtx.listenerEarHeightMeters,
       frontSpeakerHeightMeters: roomCtx.frontSpeakerHeightMeters,
       selectedModeForVisualization: roomCtx.selectedModeForVisualization,
+      wallFeatures: roomCtx.wallFeatures, // Added wallFeatures
       // From ComponentContext
       speakerConfiguration: componentCtx.speakerConfiguration,
       selectedSpeakers: componentCtx.selectedSpeakers,
@@ -104,6 +105,7 @@ export const StorageProvider = ({ children }) => {
     if (data.listenerEarHeightMeters) roomCtx.updateListenerEarHeight(data.unitSystem === 'feet' ? data.listenerEarHeightMeters * 3.28084 : data.listenerEarHeightMeters);
     if (data.frontSpeakerHeightMeters) roomCtx.updateFrontSpeakerHeight(data.unitSystem === 'feet' ? data.frontSpeakerHeightMeters * 3.28084 : data.frontSpeakerHeightMeters);
     if (data.selectedModeForVisualization) roomCtx.updateSelectedModeForVisualization(data.selectedModeForVisualization.dimension, data.selectedModeForVisualization.order);
+    if (data.wallFeatures) roomCtx.setWallFeatures(data.wallFeatures); // Added for loading wallFeatures (assuming setWallFeatures exists)
 
     // Update ComponentContext
     if (data.speakerConfiguration) componentCtx.updateSpeakerConfiguration(data.speakerConfiguration);

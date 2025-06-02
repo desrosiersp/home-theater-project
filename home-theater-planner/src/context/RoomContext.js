@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useCallback } from 'react';
+import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 
 const RoomContext = createContext();
 
@@ -21,6 +22,7 @@ export const RoomProvider = ({ children }) => {
   const [listenerEarHeightMeters, setListenerEarHeightMeters] = useState(1.0); 
   const [frontSpeakerHeightMeters, setFrontSpeakerHeightMeters] = useState(1.2); 
   const [manualSpeakerPositions, setManualSpeakerPositions] = useState({}); // { [speakerId]: {x, y, z (optional)} }
+  const [wallFeatures, setWallFeatures] = useState([]); // { id, wallIndex, type, startOffset, width, doorSwing?, doorHingeSide? }
 
   const toggleUnitSystem = useCallback(() => {
     setUnitSystem(prevUnit => (prevUnit === 'meters' ? 'feet' : 'meters'));
@@ -43,6 +45,28 @@ export const RoomProvider = ({ children }) => {
 
   const resetManualSpeakerPositions = useCallback(() => {
     setManualSpeakerPositions({});
+  }, []);
+
+  // Wall Feature Management
+  const addWallFeature = useCallback((featureData) => {
+    setWallFeatures(prevFeatures => [...prevFeatures, { ...featureData, id: uuidv4() }]);
+  }, []);
+
+  const updateWallFeature = useCallback((featureId, updates) => {
+    setWallFeatures(prevFeatures =>
+      prevFeatures.map(feature =>
+        feature.id === featureId ? { ...feature, ...updates } : feature
+      )
+    );
+  }, []);
+
+  const deleteWallFeature = useCallback((featureId) => {
+    setWallFeatures(prevFeatures => prevFeatures.filter(feature => feature.id !== featureId));
+  }, []);
+
+  // Direct setter for loading designs
+  const setLoadedWallFeatures = useCallback((loadedFeatures) => {
+    setWallFeatures(loadedFeatures || []); // Ensure it's an array, even if null/undefined from old save
   }, []);
 
   const updateListenerEarHeight = useCallback((heightInCurrentUnit) => {
@@ -99,6 +123,11 @@ export const RoomProvider = ({ children }) => {
     manualSpeakerPositions,
     updateManualSpeakerPosition,
     resetManualSpeakerPositions,
+    wallFeatures,
+    addWallFeature,
+    updateWallFeature,
+    deleteWallFeature,
+    setWallFeatures: setLoadedWallFeatures, // Expose the direct setter
   };
 
   return <RoomContext.Provider value={value}>{children}</RoomContext.Provider>;

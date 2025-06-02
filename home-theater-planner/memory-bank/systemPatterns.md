@@ -14,6 +14,7 @@
   - **AppBar (Planner-specific):** Fixed header for "Home Theater Planner" title and planner-specific actions (Save/Load Design). This AppBar is part of `MainLayout` itself.
   - **Persistent Drawer (Sidebar):** Fixed left sidebar for all primary user inputs and controls related to the planner (room setup, component selection, visualization controls).
   - **Tabbed Workspace:** Main content area within the planner uses Material-UI Tabs to switch between different planner functionalities ("Room Design", "Power & SPL", "Optimization").
+  - **Sidebar Components:** Includes inputs like `RoomDimensionInput.js`, `SpeakerConfigurationSelector.js`, `HeightInput.js`, and now `WallFeatureEditor.js` for defining room elements.
 - **`TabPanel.js`:** A helper component to manage the display of content for the active tab within `MainLayout.js`.
 - **Page Components (e.g., `HomePage.js`, `PlannerPage.js`, `BuildBlogListPage.js`):** These are routed via `App.js` and rendered within `GlobalLayout.js`. `PlannerPage.js` in turn uses `MainLayout.js`. `BuildBlogListPage.js` renders `CommunityBuildsTab.js` (which is now context-agnostic for display purposes).
 - **Responsive Design (Aspirational):** Material-UI's Grid and Box components are used, which support responsive props, but thorough responsive testing and refinement is a future task.
@@ -45,14 +46,19 @@
 - **Room Dimensions -> Context -> Multiple Consumers:**
   - `RoomDimensionInput` updates `roomDimensionsMeters` in `RoomContext`.
   - `RoomVisualizer`, `CalculationsDisplay`, `RoomModesDisplay`, `ReflectionPointsDisplay` all consume `roomDimensionsMeters` and update their respective outputs.
+  - `RoomVisualizer` also consumes `wallFeatures` from `RoomContext` to render doors, openings, and windows.
 - **Drag & Drop (`RoomVisualizer`):**
   - `onMouseDown` on an SVG element initiates drag state (local to `RoomVisualizer`).
   - `mousemove` (global listener) calculates new position and calls `updateManualSpeakerPosition` in `RoomContext`.
   - Context update triggers re-render of `RoomVisualizer` with the new manual position.
   - Other components (e.g., `CalculationsDisplay`) also consume `manualSpeakerPositions` to use updated locations.
 - **Save/Load Design (`StorageContext`):**
-  - `saveCurrentDesign` pulls data from `RoomContext` and `ComponentContext` to create a design object.
-  - `loadDesign` pushes data from a saved design object back into `RoomContext` and `ComponentContext` via their updater functions.
+  - `saveCurrentDesign` pulls data from `RoomContext` (including `wallFeatures`) and `ComponentContext` to create a design object.
+  - `loadDesign` pushes data from a saved design object back into `RoomContext` (including `wallFeatures`) and `ComponentContext` via their updater functions.
+- **Wall Feature Management:**
+  - `WallFeatureEditor.js` (sidebar component) calls updater functions in `RoomContext` (`addWallFeature`, `updateWallFeature`, `deleteWallFeature`).
+  - `RoomContext` updates the `wallFeatures` state.
+  - `RoomVisualizer.js` re-renders based on the updated `wallFeatures`.
 
 ## 6. Asynchronous Operations
 

@@ -17,7 +17,8 @@
     - `frontSpeakerHeightMeters` (number)
     - `selectedModeForVisualization` (object: `{ dimension, order }`)
     - `manualSpeakerPositions` (object: `{ [speakerId]: { x, y } }`)
-    - Associated updater functions for these states.
+    - `wallFeatures` (array of objects: `{ id, wallIndex, type, startOffset, width, doorSwing?, doorHingeSide? }`) for doors, openings, and windows.
+    - Associated updater functions for these states, including `addWallFeature`, `updateWallFeature`, `deleteWallFeature`, and `setWallFeatures` (for loading).
   - **`ComponentContext.js`:** Manages selected components and related settings:
     - `speakerConfiguration` (string: e.g., "5.1", "7.1.4")
     - `selectedSpeakers` (object: `{ [role]: speakerModelId }`)
@@ -65,9 +66,9 @@
   - `PlannerPage.js`: This page specifically uses `MainLayout.js` to structure its content.
   - `BuildBlogListPage.js`: This page renders `CommunityBuildsTab.js` (which is now context-agnostic for display) to show a list of community builds.
 - **`MainLayout.js` (Used by `PlannerPage.js`):** Defines the UI structure for the planner tool, including its own AppBar (for planner title and Save/Load actions), a persistent sidebar for inputs, and a tabbed workspace.
-  - **Sidebar (within `MainLayout.js`):** Contains various input components (`RoomNameInput`, `RoomDimensionInput`, selectors for components, modes, heights) that update the respective contexts.
+  - **Sidebar (within `MainLayout.js`):** Contains various input components (`RoomNameInput`, `RoomDimensionInput`, `WallFeatureEditor.js`, selectors for components, modes, heights) that update the respective contexts.
   - **Tabs (within `MainLayout.js`):**
-    - **"Room Design":** Features `RoomVisualizer.js`.
+    - **"Room Design":** Features `RoomVisualizer.js` (which now also renders `wallFeatures`).
     - **"Power & SPL":** Features `CalculationsDisplay.js`.
     - **"Optimization":** Features `RoomModesDisplay.js`, `ReflectionPointsDisplay.js`, and `AcousticTreatmentRecommendations.js`.
 - **`CommunityBuildsTab.js`:** Originally a tab content component, now primarily used by `BuildBlogListPage.js` to display community build cards. It has been decoupled from planner-specific contexts for display purposes.
@@ -75,6 +76,8 @@
 ## 7. Development Environment
 
 - Node.js and npm for package management and running scripts.
+  - `overrides` in `package.json` are used to manage specific versions of transitive dependencies to resolve security vulnerabilities (e.g., for `nth-check` and `postcss`).
+  - `uuid` package added for generating unique IDs for wall features.
 - `create-react-app` scripts (`npm start`, `npm run build`).
 - ESLint for linting (configured by CRA).
 - Git for version control.

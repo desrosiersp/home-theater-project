@@ -82,7 +82,7 @@ const MainLayout = ({ sidebarContent, children, showOwnAppBar = true }) => {
           },
         }}
       >
-        <Box sx={{ overflow: 'auto', p: 2, height: '100%', boxSizing: 'border-box' }}> {/* Added height and boxSizing */}
+        <Box sx={{ overflow: 'auto', p: 2, boxSizing: 'border-box' }}> {/* Removed height: '100%' */}
           {/* The mt above is a bit of a hack if GlobalLayout's AppBar is also fixed. 
               A better solution might involve GlobalLayout providing its AppBar height via context if needed,
               or ensuring only one AppBar is 'fixed' if they are from different layout components.
