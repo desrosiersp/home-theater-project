@@ -7,21 +7,21 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 const navItems = [
   { label: 'Home', path: '/' },
   { label: 'Planner', path: '/planner' },
-  { 
-    label: 'Guides', 
-    path: '/guides', 
+  {
+    label: 'Guides',
+    path: '/guides',
     subItems: [
       { label: 'How-To\'s', path: '/guides/how-to' },
       { label: 'Comparisons', path: '/guides/comparisons' },
       { label: 'Buyer\'s Guides', path: '/guides/buyers-guides' },
       { label: 'Budget Builds', path: '/guides/budget-builds' },
       { label: 'Tech Deep Dives', path: '/guides/tech-deep-dives' },
-    ] 
+    ]
   },
   { label: 'Reviews', path: '/reviews' },
   { label: 'Build Blogs', path: '/build-blogs' },
-  { 
-    label: 'Learn', 
+  {
+    label: 'Learn',
     path: '/learn',
     subItems: [
       { label: 'Glossary', path: '/learn/glossary' },
@@ -98,7 +98,7 @@ function GlobalLayout() {
 
 
   return (
-    <>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <AppBar position="static">
         <Container maxWidth="xl">
           <Toolbar disableGutters>
@@ -163,7 +163,7 @@ function GlobalLayout() {
                 ))}
               </Menu>
             </Box>
-            
+
             {/* Desktop Title (when mobile menu is shown) */}
             <Typography
               variant="h5"
@@ -186,9 +186,9 @@ function GlobalLayout() {
 
             {/* Desktop Menu */}
             <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, justifyContent: 'flex-end' }}>
-              {navItems.map((item) => 
-                item.subItems 
-                  ? item.label === 'Guides' 
+              {navItems.map((item) =>
+                item.subItems
+                  ? item.label === 'Guides'
                     ? renderSubMenu(item, anchorElGuides, handleOpenGuidesMenu, handleCloseGuidesMenu)
                     : item.label === 'Learn'
                       ? renderSubMenu(item, anchorElLearn, handleOpenLearnMenu, handleCloseLearnMenu)
@@ -199,7 +199,7 @@ function GlobalLayout() {
           </Toolbar>
         </Container>
       </AppBar>
-      <Container component="main" sx={{ mt: 2, mb: 2 }} maxWidth={false}>
+      <Container component="main" sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', maxWidth: false, mt: 2, mb: 2 }}>
         <Outlet /> {/* This is where the routed page components will be rendered */}
       </Container>
       <Box component="footer" sx={{ bgcolor: 'background.paper', py: 6, textAlign: 'center' }}>
@@ -209,7 +209,7 @@ function GlobalLayout() {
           </Typography>
         </Container>
       </Box>
-    </>
+    </Box>
   );
 }
 

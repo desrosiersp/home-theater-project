@@ -22,7 +22,7 @@ function a11yProps(index) {
 }
 
 // Added showOwnAppBar prop, defaulting to true
-const MainLayout = ({ sidebarContent, children, showOwnAppBar = true }) => { 
+const MainLayout = ({ sidebarContent, children, showOwnAppBar = true }) => {
   const [currentTab, setCurrentTab] = useState(0);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [loadDialogOpen, setLoadDialogOpen] = useState(false);
@@ -37,8 +37,8 @@ const MainLayout = ({ sidebarContent, children, showOwnAppBar = true }) => {
   const handleCloseLoadDialog = () => setLoadDialogOpen(false);
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-      <CssBaseline /> 
+    <Box sx={{ display: 'flex', height: '100%' }}>
+      <CssBaseline />
       {showOwnAppBar && (
         <>
           <AppBar
@@ -70,67 +70,58 @@ const MainLayout = ({ sidebarContent, children, showOwnAppBar = true }) => {
         sx={{
           width: drawerWidth,
           flexShrink: 0,
-          marginTop: showOwnAppBar ? appBarHeight : '0px',
-          height: showOwnAppBar ? `calc(100vh - ${appBarHeight})` : '100vh',
+          // marginTop is handled by paddingTop on MuiDrawer-paper if showOwnAppBar is true
+          height: '100%', // Drawer fills the height of its flex container
           [`& .MuiDrawer-paper`]: {
-            width: '100%', 
-            height: '100%', 
-            position: 'relative', 
+            width: drawerWidth, // Ensure paper takes full drawerWidth
+            height: '100%',
+            position: 'relative', // Important for containing its children properly
             boxSizing: 'border-box',
-            backgroundColor: '#f8f9fa', 
+            backgroundColor: '#f8f9fa',
             borderRight: '1px solid #e9ecef',
+            paddingTop: showOwnAppBar ? appBarHeight : '0px', // Offset content if planner's AppBar is shown
           },
         }}
       >
-        <Box sx={{ overflow: 'auto', p: 2, boxSizing: 'border-box' }}> {/* Removed height: '100%' */}
-          {/* The mt above is a bit of a hack if GlobalLayout's AppBar is also fixed. 
-              A better solution might involve GlobalLayout providing its AppBar height via context if needed,
-              or ensuring only one AppBar is 'fixed' if they are from different layout components.
-              For now, this assumes GlobalLayout's AppBar might also be fixed and we need to clear it.
-              If GlobalLayout's AppBar is static, this mt might not be needed or adjusted.
-              Let's assume for now GlobalLayout's AppBar is static or PlannerPage is the only content.
-              Revisiting this specific margin might be needed based on GlobalLayout's AppBar style.
-              A simpler approach: if showOwnAppBar is false, the Drawer's content might need padding to clear the *GlobalLayout's* AppBar.
-              Let's simplify: Drawer content starts from its top. GlobalLayout handles its own AppBar spacing.
-            */}
-             {sidebarContent} {/* Render sidebarContent prop here */}
+        <Box sx={{ overflow: 'auto', height: '100%', p: 2, boxSizing: 'border-box' }}>
+          {sidebarContent} {/* Render sidebarContent prop here */}
         </Box>
       </Drawer>
-      
+
       <Box
         component="main"
         sx={{
-          flexGrow: 1,
-          p: 3,
-          marginLeft: `${drawerWidth}px`, // Offset by drawer width
-          marginTop: showOwnAppBar ? appBarHeight : '0px', // Adjust based on AppBar visibility
-          backgroundColor: 'white', // Main content area background
-          minHeight: showOwnAppBar ? `calc(100vh - ${appBarHeight})` : '100vh',
+          flexGrow: 1, // Takes remaining width
           display: 'flex',
-          flexDirection: 'column'
+          flexDirection: 'column',
+          height: '100%', // Fills height of its part of the main flex row
+          paddingTop: showOwnAppBar ? appBarHeight : '0px', // Adjust based on AppBar visibility
+          backgroundColor: 'white', // Main content area background
         }}
       >
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', width: '100%' }}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', width: '100%', flexShrink: 0 }}>
           <Tabs value={currentTab} onChange={handleTabChange} aria-label="main content tabs">
             <Tab label="Room Design" {...a11yProps(0)} />
             <Tab label="Power & SPL" {...a11yProps(1)} />
             <Tab label="Optimization" {...a11yProps(2)} />
           </Tabs>
         </Box>
-        <TabPanel value={currentTab} index={0}>
-          {/* Content for Room Design tab (passed as children from App.js) */}
-          {children}
-        </TabPanel>
-        <TabPanel value={currentTab} index={1}>
-          <CalculationsDisplay />
-        </TabPanel>
-        <TabPanel value={currentTab} index={2}>
-          <RoomModesDisplay />
-          <MuiDivider sx={{ my: 3 }} />
-          <ReflectionPointsDisplay />
-          <MuiDivider sx={{ my: 3 }} />
-          <AcousticTreatmentRecommendations />
-        </TabPanel>
+        <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 3 }}>
+          <TabPanel value={currentTab} index={0}>
+            {/* Content for Room Design tab (passed as children from App.js) */}
+            {children}
+          </TabPanel>
+          <TabPanel value={currentTab} index={1}>
+            <CalculationsDisplay />
+          </TabPanel>
+          <TabPanel value={currentTab} index={2}>
+            <RoomModesDisplay />
+            <MuiDivider sx={{ my: 3 }} />
+            <ReflectionPointsDisplay />
+            <MuiDivider sx={{ my: 3 }} />
+            <AcousticTreatmentRecommendations />
+          </TabPanel>
+        </Box>
       </Box>
     </Box>
   );
