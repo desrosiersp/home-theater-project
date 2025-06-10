@@ -9,15 +9,24 @@ export const useComponentContext = () => {
 export const ComponentProvider = ({ children }) => {
   const [speakerConfiguration, setSpeakerConfiguration] = useState("5.1"); // Default configuration
   // selectedSpeakers could map role (e.g., 'fronts', 'center', 'surrounds') to a speaker model ID
-  const [selectedSpeakers, setSelectedSpeakers] = useState({}); 
+  const [selectedSpeakers, setSelectedSpeakers] = useState({});
   const [selectedReceiver, setSelectedReceiver] = useState(''); // Store ID of selected receiver
   const [selectedDisplay, setSelectedDisplay] = useState(''); // Store ID of selected display
   const [targetSPL, setTargetSPL] = useState(85); // Default Target SPL in dB
+  const [speakerDistanceAdjustments, setSpeakerDistanceAdjustments] = useState({
+    front: 1.0,
+    center: 1.0,
+    surround: 1.0,
+    rear: 1.0,
+    topFront: 1.0,
+    topMiddle: 1.0,
+    topRear: 1.0,
+  });
 
   const updateSpeakerConfiguration = useCallback((newConfiguration) => {
     setSpeakerConfiguration(newConfiguration);
     // Reset selected speakers if configuration changes, as roles might change
-    setSelectedSpeakers({}); 
+    setSelectedSpeakers({});
   }, []);
 
   const updateSelectedSpeaker = useCallback((role, speakerId) => {
@@ -36,6 +45,10 @@ export const ComponentProvider = ({ children }) => {
     setTargetSPL(spl);
   }, []);
 
+  const updateSpeakerDistanceAdjustment = useCallback((role, multiplier) => {
+    setSpeakerDistanceAdjustments(prev => ({ ...prev, [role]: parseFloat(multiplier) }));
+  }, []);
+
   const value = {
     speakerConfiguration,
     updateSpeakerConfiguration,
@@ -47,6 +60,8 @@ export const ComponentProvider = ({ children }) => {
     updateSelectedDisplay,
     targetSPL,
     updateTargetSPL,
+    speakerDistanceAdjustments,
+    updateSpeakerDistanceAdjustment,
   };
 
   return <ComponentContext.Provider value={value}>{children}</ComponentContext.Provider>;

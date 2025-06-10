@@ -3,7 +3,7 @@ import { Box, Typography, Grid, Paper, CircularProgress } from '@mui/material';
 import { useRoomContext } from '../../context/RoomContext';
 import { useComponentContext } from '../../context/ComponentContext';
 import { calculateRoomVolume, calculateRequiredPower, calculateMaxSPL, estimateTotalPowerDraw } from '../../utils/powerCalculator'; // Added estimateTotalPowerDraw
-import { calculateSpeakerPositions } from '../../utils/dolbyAtmosRules'; 
+// import { calculateSpeakerPositions } from '../../utils/dolbyAtmosRules'; // No longer needed here
 
 const CalculationCard = ({ title, value, unit }) => (
   <Paper elevation={3} sx={{ p: 2, textAlign: 'center' }}>
@@ -14,34 +14,23 @@ const CalculationCard = ({ title, value, unit }) => (
   </Paper>
 );
 
-const CalculationsDisplay = () => {
-  const { roomDimensionsMeters, unitSystem, manualSpeakerPositions } = useRoomContext(); // Added manualSpeakerPositions
+const CalculationsDisplay = ({ finalSpeakerPositions, listeningPosition }) => { // Accept props
+  const { roomDimensionsMeters, unitSystem } = useRoomContext(); // manualSpeakerPositions removed
   const { selectedSpeakers, selectedReceiver, selectedDisplay, targetSPL, speakerConfiguration } = useComponentContext();
-  
+
   const [speakerData, setSpeakerData] = useState([]);
   const [receiverData, setReceiverData] = useState([]);
   const [displayData, setDisplayData] = useState([]); // Added displayData state
   const [loading, setLoading] = useState(true);
 
-  // Calculate all speaker positions including LP, then merge with manual overrides
-  const allSpeakerPositions = useMemo(() => {
-    let positions = [];
-    if (roomDimensionsMeters.width > 0 && roomDimensionsMeters.length > 0 && speakerConfiguration) {
-      positions = calculateSpeakerPositions(roomDimensionsMeters, speakerConfiguration);
-    }
-    // Merge with manual positions
-    return positions.map(p => ({
-      ...p,
-      ...(manualSpeakerPositions[p.id] || {}) 
-    }));
-  }, [roomDimensionsMeters, speakerConfiguration, manualSpeakerPositions]);
+  // allSpeakerPositions and listeningPosition are now props.
+  // const listeningPosition = useMemo(() => finalSpeakerPositions.find(sp => sp.isListeningPosition), [finalSpeakerPositions]); // This is passed as a prop
 
-  const listeningPosition = useMemo(() => allSpeakerPositions.find(sp => sp.isListeningPosition), [allSpeakerPositions]);
-  
   // Use Center speaker if available, otherwise Front Left as reference for distance
   const referenceSpeakerForDistance = useMemo(() => {
-    return allSpeakerPositions.find(sp => sp.id === 'c') || allSpeakerPositions.find(sp => sp.id === 'fl');
-  }, [allSpeakerPositions]);
+    if (!finalSpeakerPositions || finalSpeakerPositions.length === 0) return null;
+    return finalSpeakerPositions.find(sp => sp.id === 'c') || finalSpeakerPositions.find(sp => sp.id === 'fl');
+  }, [finalSpeakerPositions]);
 
   const listeningDistanceMeters = useMemo(() => {
     if (listeningPosition && referenceSpeakerForDistance) {
@@ -81,10 +70,10 @@ const CalculationsDisplay = () => {
   // This needs to be more sophisticated later (e.g., per speaker type, actual LP)
   const frontLRSpeakerModelId = selectedSpeakers.frontLR; // Use 'frontLR' role for front speakers
   const currentSpeaker = speakerData.find(s => s.model === frontLRSpeakerModelId); // Assuming model is unique ID for now
-  
+
   const currentReceiverModelId = selectedReceiver;
-  const currentAvr = receiverData.find(r => r.model === currentReceiverModelId); 
-  
+  const currentAvr = receiverData.find(r => r.model === currentReceiverModelId);
+
   const currentDisplayId = selectedDisplay;
   const currentDisplay = displayData.find(d => d.id === currentDisplayId);
 
@@ -100,11 +89,11 @@ const CalculationsDisplay = () => {
       targetSPL
     );
     if (currentAvr && currentAvr.power) {
-        const avrPowerMatch = currentAvr.power.match(/(\d+(\.\d+)?)/); 
-        const avrPowerWatts = avrPowerMatch ? parseFloat(avrPowerMatch[1]) : 0;
-        if (avrPowerWatts > 0) {
-             maxSPL = calculateMaxSPL(currentSpeaker.sensitivity, avrPowerWatts, listeningDistanceMeters);
-        }
+      const avrPowerMatch = currentAvr.power.match(/(\d+(\.\d+)?)/);
+      const avrPowerWatts = avrPowerMatch ? parseFloat(avrPowerMatch[1]) : 0;
+      if (avrPowerWatts > 0) {
+        maxSPL = calculateMaxSPL(currentSpeaker.sensitivity, avrPowerWatts, listeningDistanceMeters);
+      }
     }
   }
 
@@ -120,60 +109,60 @@ const CalculationsDisplay = () => {
   numChannels = Math.max(numChannels, 2); // Assume at least 2 channels for stereo
 
   totalPowerDraw = estimateTotalPowerDraw(currentAvr, currentDisplay, numChannels);
-  
+
   return (
     <Box sx={{ p: 2 }}>
       <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
         Power & SPL Calculations
       </Typography>
       <Grid container spacing={3}>
-        <Grid item xs={12} sm={6} md={3}> 
-          <CalculationCard 
-            title="Room Volume" 
-            value={unitSystem === 'meters' ? roomVolumeMeters.toFixed(2) : roomVolumeFeet.toFixed(2)} 
-            unit={unitSystem === 'meters' ? 'm³' : 'ft³'} 
+        <Grid item xs={12} sm={6} md={3}>
+          <CalculationCard
+            title="Room Volume"
+            value={unitSystem === 'meters' ? roomVolumeMeters.toFixed(2) : roomVolumeFeet.toFixed(2)}
+            unit={unitSystem === 'meters' ? 'm³' : 'ft³'}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <CalculationCard 
-            title="Listening Distance" 
-            value={listeningDistanceMeters > 0 ? listeningDistanceMeters.toFixed(2) : 'N/A'} 
+          <CalculationCard
+            title="Listening Distance"
+            value={listeningDistanceMeters > 0 ? listeningDistanceMeters.toFixed(2) : 'N/A'}
             unit={listeningDistanceMeters > 0 ? (unitSystem === 'meters' ? 'm' : 'ft') : ''} // Show distance in current unit
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <CalculationCard 
-            title="Required Power (per ch)" 
-            value={requiredPower > 0 ? requiredPower.toFixed(1) : 'N/A'} 
+          <CalculationCard
+            title="Required Power (per ch)"
+            value={requiredPower > 0 ? requiredPower.toFixed(1) : 'N/A'}
             unit={requiredPower > 0 ? 'W' : ''}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <CalculationCard 
-            title="Estimated Max SPL" 
-            value={maxSPL > 0 ? maxSPL.toFixed(1) : 'N/A'} 
+          <CalculationCard
+            title="Estimated Max SPL"
+            value={maxSPL > 0 ? maxSPL.toFixed(1) : 'N/A'}
             unit={maxSPL > 0 ? 'dB' : ''}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <CalculationCard 
-            title="Total Power Draw" 
-            value={totalPowerDraw > 0 ? totalPowerDraw : 'N/A'} 
+          <CalculationCard
+            title="Total Power Draw"
+            value={totalPowerDraw > 0 ? totalPowerDraw : 'N/A'}
             unit={totalPowerDraw > 0 ? "W" : ""} />
         </Grid>
       </Grid>
       {(!currentSpeaker || !currentAvr || !currentDisplay) && (
-        <Typography color="error" sx={{mt: 2}}>
-            Please select a main speaker, AV receiver, and Display from the sidebar to see all calculations.
+        <Typography color="error" sx={{ mt: 2 }}>
+          Please select a main speaker, AV receiver, and Display from the sidebar to see all calculations.
         </Typography>
       )}
-       <Typography variant="caption" display="block" sx={{mt: 2, fontStyle: 'italic'}}>
+      <Typography variant="caption" display="block" sx={{ mt: 2, fontStyle: 'italic' }}>
         Note: Listening distance is calculated to the Center or Front Left speaker. Required power, Max SPL and Total Power Draw are estimates.
       </Typography>
 
       <Box mt={4}>
         <Typography variant="h6" gutterBottom>Detailed Analysis</Typography>
-        <Paper elevation={1} sx={{p:2}}>
+        <Paper elevation={1} sx={{ p: 2 }}>
           {currentSpeaker && currentAvr && currentDisplay ? (
             <>
               <Typography variant="body2" paragraph>
