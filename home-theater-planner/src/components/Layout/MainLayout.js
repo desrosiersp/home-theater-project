@@ -1,126 +1,156 @@
 import React, { useState } from 'react';
-import { Box, AppBar, Toolbar, Typography, Drawer, CssBaseline, Tabs, Tab, Divider as MuiDivider, Button, IconButton } from '@mui/material'; // Added Button, IconButton
-import SaveIcon from '@mui/icons-material/Save';
-import FolderOpenIcon from '@mui/icons-material/FolderOpen';
-import TabPanel from './TabPanel';
-import CalculationsDisplay from '../PowerCalculator/CalculationsDisplay';
-import RoomModesDisplay from '../AcousticsCalculator/RoomModesDisplay';
-import ReflectionPointsDisplay from '../AcousticsCalculator/ReflectionPointsDisplay';
-import AcousticTreatmentRecommendations from '../AcousticsCalculator/AcousticTreatmentRecommendations';
-import SaveDesignDialog from '../Sharing/SaveDesignDialog';
-import LoadDesignDialog from '../Sharing/LoadDesignDialog';
-// import CommunityBuildsTab from '../../pages/CommunityBuildsTab'; // Commented out or removed
+import { Box, AppBar, Toolbar, Typography, Drawer, CssBaseline, Button, Stepper, Step, StepLabel, StepButton } from '@mui/material'; // Added StepButton
+// import SaveIcon from '@mui/icons-material/Save'; // Temporarily unused
+// import FolderOpenIcon from '@mui/icons-material/FolderOpen'; // Temporarily unused
+// import TabPanel from './TabPanel'; // No longer needed
+// import CalculationsDisplay from '../PowerCalculator/CalculationsDisplay'; // Will be part of a step
+// import RoomModesDisplay from '../AcousticsCalculator/RoomModesDisplay'; // Will be part of a step
+// import ReflectionPointsDisplay from '../AcousticsCalculator/ReflectionPointsDisplay'; // Will be part of a step
+// import AcousticTreatmentRecommendations from '../AcousticsCalculator/AcousticTreatmentRecommendations'; // Will be part of a step
+// import SaveDesignDialog from '../Sharing/SaveDesignDialog'; // To be reintegrated
+// import LoadDesignDialog from '../Sharing/LoadDesignDialog'; // To be reintegrated
 
-const drawerWidth = 350; // Width of the sidebar
+const drawerWidth = 350; // Width of the sidebar - This might be removed or repurposed if sidebar is removed
 const appBarHeight = '64px'; // Assuming default AppBar height
 
-function a11yProps(index) {
-  return {
-    id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
+const steps = ['Room Definition', 'Component Setup', 'Layout & Placement', 'Analysis & Insights', 'Review & Save/Load'];
+
+// showOwnAppBar defaults to true. stepsContent prop will hold an array of components for each step.
+const MainLayout = ({ stepsContent, showOwnAppBar = true }) => {
+  const [activeStep, setActiveStep] = useState(0);
+  const [completed, setCompleted] = useState({}); // Added completed state
+  // const [saveDialogOpen, setSaveDialogOpen] = useState(false); // To be reintegrated
+  // const [loadDialogOpen, setLoadDialogOpen] = useState(false); // To be reintegrated
+
+  // const handleOpenSaveDialog = () => setSaveDialogOpen(true); // To be reintegrated
+  // const handleCloseSaveDialog = () => setSaveDialogOpen(false); // To be reintegrated
+  // const handleOpenLoadDialog = () => setLoadDialogOpen(true); // To be reintegrated
+  // const handleCloseLoadDialog = () => setLoadDialogOpen(false); // To be reintegrated
+
+  const handleNext = () => {
+    const newCompleted = { ...completed };
+    newCompleted[activeStep] = true;
+    setCompleted(newCompleted);
+    setActiveStep((prevActiveStep) => prevActiveStep + 1);
   };
-}
 
-// Added showOwnAppBar prop, defaulting to true
-const MainLayout = ({ sidebarContent, children, showOwnAppBar = true }) => {
-  const [currentTab, setCurrentTab] = useState(0);
-  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
-  const [loadDialogOpen, setLoadDialogOpen] = useState(false);
-
-  const handleTabChange = (event, newValue) => {
-    setCurrentTab(newValue);
+  const handleBack = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
-  const handleOpenSaveDialog = () => setSaveDialogOpen(true);
-  const handleCloseSaveDialog = () => setSaveDialogOpen(false);
-  const handleOpenLoadDialog = () => setLoadDialogOpen(true);
-  const handleCloseLoadDialog = () => setLoadDialogOpen(false);
+  const handleStepClick = (stepIndex) => {
+    if (stepIndex === activeStep + 1) { // If moving to the immediate next step
+      const newCompleted = { ...completed };
+      newCompleted[activeStep] = true; // Mark current step as completed
+      setCompleted(newCompleted);
+    }
+    setActiveStep(stepIndex); // Set the new active step
+  };
+
+  const getStepContent = (step) => {
+    if (stepsContent && stepsContent[step]) {
+      return stepsContent[step];
+    }
+    return <Typography>Content not available for this step.</Typography>;
+  };
 
   return (
-    <Box sx={{ display: 'flex', height: '100%' }}>
+    <Box sx={{ display: 'flex', height: '100vh', flexDirection: 'column' }}> {/* Changed to column for wizard */}
       <CssBaseline />
       {showOwnAppBar && (
         <>
           <AppBar
             position="fixed"
             sx={{
-              zIndex: (theme) => theme.zIndex.drawer + 1,
+              // If this AppBar is shown, it needs to be positioned correctly,
+              // e.g., top: globalAppBarHeight if there's a global one above it.
+              // For now, assuming it's hidden via showOwnAppBar={false} from PlannerPage.
+              zIndex: (theme) => theme.zIndex.drawer + 1, // Example, may not be needed if no drawer
               background: 'linear-gradient(135deg, #1a1a2e, #16213e)',
             }}
           >
             <Toolbar>
               <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-                Home Theater Planner
+                Home Theater Planner (Wizard Mode)
               </Typography>
-              <Button color="inherit" startIcon={<SaveIcon />} onClick={handleOpenSaveDialog} sx={{ mr: 1 }}>
-                Save Design
-              </Button>
-              <Button color="inherit" startIcon={<FolderOpenIcon />} onClick={handleOpenLoadDialog}>
-                Load Design
-              </Button>
+              {/* Save/Load buttons were here, will move to final wizard step */}
             </Toolbar>
           </AppBar>
-          <SaveDesignDialog open={saveDialogOpen} handleClose={handleCloseSaveDialog} />
-          <LoadDesignDialog open={loadDialogOpen} handleClose={handleCloseLoadDialog} />
+          {/* <SaveDesignDialog open={saveDialogOpen} handleClose={handleCloseSaveDialog} /> */}
+          {/* <LoadDesignDialog open={loadDialogOpen} handleClose={handleCloseLoadDialog} /> */}
         </>
       )}
 
+      {/* The Drawer is removed as the wizard steps will occupy the main content area.
+          If a persistent sidebar is still desired alongside the wizard, this section would need to be re-evaluated.
+          For now, assuming a full-width wizard experience. */}
+      {/*
       <Drawer
-        variant="permanent" // Persistent sidebar
+        variant="permanent"
         sx={{
           width: drawerWidth,
           flexShrink: 0,
-          // marginTop is handled by paddingTop on MuiDrawer-paper if showOwnAppBar is true
-          height: '100%', // Drawer fills the height of its flex container
+          height: '100%',
           [`& .MuiDrawer-paper`]: {
-            width: drawerWidth, // Ensure paper takes full drawerWidth
+            width: drawerWidth,
             height: '100%',
-            position: 'relative', // Important for containing its children properly
+            position: 'relative',
             boxSizing: 'border-box',
             backgroundColor: '#f8f9fa',
             borderRight: '1px solid #e9ecef',
-            paddingTop: showOwnAppBar ? appBarHeight : '0px', // Offset content if planner's AppBar is shown
+            paddingTop: showOwnAppBar ? appBarHeight : '0px',
           },
         }}
       >
         <Box sx={{ overflow: 'auto', height: '100%', p: 2, boxSizing: 'border-box' }}>
-          {sidebarContent} {/* Render sidebarContent prop here */}
+          {/* Sidebar content would be dynamic based on step or removed entirely }
         </Box>
       </Drawer>
+      */}
 
       <Box
         component="main"
         sx={{
-          flexGrow: 1, // Takes remaining width
+          flexGrow: 1,
           display: 'flex',
           flexDirection: 'column',
-          height: '100%', // Fills height of its part of the main flex row
-          paddingTop: showOwnAppBar ? appBarHeight : '0px', // Adjust based on AppBar visibility
-          backgroundColor: 'white', // Main content area background
+          width: '100%', // Wizard takes full width
+          paddingTop: showOwnAppBar ? appBarHeight : '0px', // Adjust if MainLayout's AppBar is shown
+          backgroundColor: 'white',
+          overflowY: 'auto', // Allow content within a step to scroll
+          p: 3, // Padding for the main content area of the wizard
         }}
       >
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', width: '100%', flexShrink: 0 }}>
-          <Tabs value={currentTab} onChange={handleTabChange} aria-label="main content tabs">
-            <Tab label="Room Design" {...a11yProps(0)} />
-            <Tab label="Power & SPL" {...a11yProps(1)} />
-            <Tab label="Optimization" {...a11yProps(2)} />
-          </Tabs>
+        <Stepper activeStep={activeStep} sx={{ mb: 3 }}>
+          {steps.map((label, index) => (
+            <Step key={label} completed={completed[index]}>
+              <StepButton
+                onClick={() => handleStepClick(index)}
+                disabled={index > activeStep + 1}
+              >
+                <StepLabel>{label}</StepLabel>
+              </StepButton>
+            </Step>
+          ))}
+        </Stepper>
+
+        <Box sx={{ mb: 2, flexGrow: 1 }}> {/* Box for step content */}
+          {getStepContent(activeStep)}
         </Box>
-        <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 3 }}>
-          <TabPanel value={currentTab} index={0}>
-            {/* Content for Room Design tab (passed as children from App.js) */}
-            {children}
-          </TabPanel>
-          <TabPanel value={currentTab} index={1}>
-            <CalculationsDisplay />
-          </TabPanel>
-          <TabPanel value={currentTab} index={2}>
-            <RoomModesDisplay />
-            <MuiDivider sx={{ my: 3 }} />
-            <ReflectionPointsDisplay />
-            <MuiDivider sx={{ my: 3 }} />
-            <AcousticTreatmentRecommendations />
-          </TabPanel>
+
+        <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
+          <Button
+            color="inherit"
+            disabled={activeStep === 0}
+            onClick={handleBack}
+            sx={{ mr: 1 }}
+          >
+            Back
+          </Button>
+          <Box sx={{ flex: '1 1 auto' }} />
+          <Button onClick={handleNext} disabled={activeStep === steps.length - 1}>
+            Next
+          </Button>
         </Box>
       </Box>
     </Box>

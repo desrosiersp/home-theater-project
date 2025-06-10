@@ -3,64 +3,62 @@ import { Box, Typography, Button, Stack } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import { useRoomContext } from '../../context/RoomContext';
-import { useComponentContext } from '../../context/ComponentContext';
-import { calculateSpeakerPositions } from '../../utils/dolbyAtmosRules';
+import { useComponentContext } from '../../context/ComponentContext'; // Keep this for adjustments
+import { autoOptimizePlacement } from '../../utils/autoOptimizePlacement'; // Added
 
-const RoomVisualizer = () => {
-  const { 
+// calculateSpeakerPositions is no longer directly called here
+// import { calculateSpeakerPositions } from '../../utils/dolbyAtmosRules'; 
+
+const RoomVisualizer = ({ finalSpeakerPositions, speakerConfiguration }) => { // Accept finalSpeakerPositions and speakerConfiguration as props
+  const {
     roomDimensionsMeters,
     getDimensionsInCurrentUnit,
     unitSystem,
     selectedModeForVisualization,
-    manualSpeakerPositions,
-    updateManualSpeakerPosition,
-    resetManualSpeakerPositions,
-    wallFeatures, // Added wallFeatures
+    wallFeatures,
   } = useRoomContext();
-  const { speakerConfiguration } = useComponentContext();
+  const { speakerDistanceAdjustments, updateSpeakerDistanceAdjustment } = useComponentContext(); // Get adjustments and updater
 
-  const [calculatedSpeakers, setCalculatedSpeakers] = useState([]);
-  const [refreshKey, setRefreshKey] = useState(0);
-  
-  // Drag state
-  const [draggingSpeakerId, setDraggingSpeakerId] = useState(null);
-  const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
+  // calculatedSpeakers and related logic are removed as positions are now passed via props.
+  // const [calculatedSpeakers, setCalculatedSpeakers] = useState([]); 
+  const [refreshKey, setRefreshKey] = useState(0); // May not be needed if context updates drive re-render
   const svgRef = useRef(null);
 
-  const { width: widthMeters, length: lengthMeters, height: heightMeters } = roomDimensionsMeters; // Added heightMeters
+  const { width: widthMeters, length: lengthMeters, height: heightMeters } = roomDimensionsMeters;
 
-  // Calculate initial speaker positions or when dependencies change
-  const calculateAndSetInitialSpeakers = useCallback(() => {
-    if (widthMeters > 0 && lengthMeters > 0 && speakerConfiguration) {
-      const calculated = calculateSpeakerPositions(roomDimensionsMeters, speakerConfiguration);
-      setCalculatedSpeakers(calculated);
-    } else {
-      setCalculatedSpeakers([]);
-    }
-  }, [roomDimensionsMeters, speakerConfiguration, widthMeters, lengthMeters]);
-
-  useEffect(() => {
-    calculateAndSetInitialSpeakers();
-  }, [calculateAndSetInitialSpeakers, refreshKey]);
+  // useEffect for calculateAndSetInitialSpeakers is removed.
+  // finalSpeakerPositions prop will trigger re-renders when it changes.
 
   const handleResetLayout = () => {
-    resetManualSpeakerPositions(); // Clear manual overrides
-    setRefreshKey(prevKey => prevKey + 1); // Trigger recalculation of base positions
-  };
-
-  const handleAutoOptimize = () => {
-    // For now, same as reset. Later, this can have more advanced logic.
-    resetManualSpeakerPositions();
+    // This should now ideally reset adjustments in ComponentContext to default,
+    // or simply trigger a re-calculation if adjustments are already default.
+    // For now, a simple refreshKey bump will re-run calculateAndSetInitialSpeakers
+    // which uses the current speakerDistanceAdjustments.
+    // TODO: Consider if a dedicated "reset adjustments" function in ComponentContext is needed.
     setRefreshKey(prevKey => prevKey + 1);
   };
 
-  // Combine calculated and manual positions for rendering
-  const finalSpeakerPositions = useMemo(() => {
-    return calculatedSpeakers.map(cs => {
-      const manualPos = manualSpeakerPositions[cs.id];
-      return manualPos ? { ...cs, ...manualPos } : cs; // Prioritize manual position if it exists
-    });
-  }, [calculatedSpeakers, manualSpeakerPositions]);
+  const handleAutoOptimize = () => {
+    if (roomDimensionsMeters && finalSpeakerPositions && finalSpeakerPositions.length > 0) {
+      const newAdjustments = autoOptimizePlacement(
+        roomDimensionsMeters,
+        finalSpeakerPositions, // Pass current positions based on current adjustments
+        speakerDistanceAdjustments
+      );
+      // Update context with new adjustments
+      Object.keys(newAdjustments).forEach(roleKey => {
+        if (speakerDistanceAdjustments[roleKey] !== newAdjustments[roleKey]) { // Only update if changed
+          updateSpeakerDistanceAdjustment(roleKey, newAdjustments[roleKey]);
+        }
+      });
+      // The context update should trigger PlannerPage to recalculate finalSpeakerPositions,
+      // which will then flow down as props and cause a re-render.
+      // setRefreshKey(prevKey => prevKey + 1); // May not be strictly necessary if context updates are reliable
+    }
+  };
+
+  // Speaker positions are now directly from the prop.
+  // const finalSpeakerPositions = calculatedSpeakers; // This line is removed.
 
   // Memoize scaling calculations to avoid re-running them on every render if dimensions/scale haven't changed
   const { vizWidth, vizHeight, currentScale } = useMemo(() => {
@@ -85,68 +83,15 @@ const RoomVisualizer = () => {
     return { vizWidth: Math.max(vW, 1), vizHeight: Math.max(vH, 1), currentScale: scale };
   }, [widthMeters, lengthMeters]);
 
-  // Drag handlers
-  const handleMouseDown = (e, speakerId) => {
-    e.preventDefault();
-    setDraggingSpeakerId(speakerId);
-    const CTM = svgRef.current.getScreenCTM().inverse();
-    const svgPoint = svgRef.current.createSVGPoint();
-    svgPoint.x = e.clientX;
-    svgPoint.y = e.clientY;
-    const startPos = svgPoint.matrixTransform(CTM);
-    setDragStartPos({ x: startPos.x, y: startPos.y });
+  // Drag handlers and related useEffects are removed.
 
-    // Add global listeners
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-  };
-
-  const handleMouseMove = useCallback((e) => {
-    if (!draggingSpeakerId || !svgRef.current) return;
-    e.preventDefault();
-
-    const CTM = svgRef.current.getScreenCTM().inverse();
-    const svgPoint = svgRef.current.createSVGPoint();
-    svgPoint.x = e.clientX;
-    svgPoint.y = e.clientY;
-    const currentSvgPos = svgPoint.matrixTransform(CTM);
-
-    // Convert pixel position to meters
-    let newX_meters = currentSvgPos.x / currentScale;
-    let newY_meters = currentSvgPos.y / currentScale;
-
-    // Clamp to room boundaries (in meters)
-    newX_meters = Math.max(0, Math.min(newX_meters, widthMeters));
-    newY_meters = Math.max(0, Math.min(newY_meters, lengthMeters));
-    
-    updateManualSpeakerPosition(draggingSpeakerId, { x: newX_meters, y: newY_meters });
-
-  }, [draggingSpeakerId, currentScale, widthMeters, lengthMeters, updateManualSpeakerPosition]); // Added currentScale, widthMeters, lengthMeters
-
-  const handleMouseUp = useCallback((e) => {
-    if (!draggingSpeakerId) return;
-    e.preventDefault();
-    setDraggingSpeakerId(null);
-    document.removeEventListener('mousemove', handleMouseMove);
-    document.removeEventListener('mouseup', handleMouseUp);
-  }, [draggingSpeakerId, handleMouseMove]); // Added handleMouseMove
-
-  // Cleanup global listeners when component unmounts or drag ends
-  useEffect(() => {
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [handleMouseMove, handleMouseUp]);
-
-  
   const displayedDimensions = getDimensionsInCurrentUnit();
   const currentUnitSuffix = unitSystem === 'meters' ? 'm' : 'ft';
 
   return (
     <Box sx={{ p: 2, border: '1px solid blue', borderRadius: 1, mt: 2, overflow: 'auto' }}>
       <Typography variant="h6" gutterBottom>
-        Room Visualization (Top-Down) - {speakerConfiguration}
+        Room Visualization (Top-Down) {speakerConfiguration ? `- ${speakerConfiguration}` : ''}
       </Typography>
       {widthMeters > 0 && lengthMeters > 0 ? (
         <svg
@@ -154,7 +99,7 @@ const RoomVisualizer = () => {
           width={vizWidth}
           height={vizHeight}
           viewBox={`0 0 ${vizWidth} ${vizHeight}`}
-          style={{ border: '1px solid black', backgroundColor: '#f0f0f0', display: 'block', margin: 'auto', position: 'relative', cursor: draggingSpeakerId ? 'grabbing' : 'default' }}
+          style={{ border: '1px solid black', backgroundColor: '#f0f0f0', display: 'block', margin: 'auto', position: 'relative' }} // Removed cursor style
         >
           <rect x="0" y="0" width={vizWidth} height={vizHeight} fill="#e0e0e0" stroke="black" />
 
@@ -185,11 +130,11 @@ const RoomVisualizer = () => {
                     const arcEndX = feature.doorHingeSide === 'left' ? featX + featWidth : featX;
                     // Path: M (hinge) L (knob-side-open) A (radius radius 0 0 sweep-flag knob-side-closed)
                     // This is a simplified representation
-                     if (feature.doorSwing?.includes('inward')) {
-                        elements.push(<path key={`${feature.id}-arc`} d={`M ${hingeX} 0 L ${hingeX} ${featWidth * 0.8} M ${hingeX} 0 A ${featWidth} ${featWidth} 0 0 ${feature.doorHingeSide === 'left' ? 1:0} ${arcEndX} ${featWidth* (feature.doorHingeSide === 'left' ? 0.3 : -0.3)}`} stroke={doorStrokeColor} strokeDasharray="2,2" fill="none"/>);
-                     } else { // outward
-                        elements.push(<path key={`${feature.id}-arc`} d={`M ${hingeX} 0 L ${hingeX} ${-featWidth * 0.8} M ${hingeX} 0 A ${featWidth} ${featWidth} 0 0 ${feature.doorHingeSide === 'left' ? 0:1} ${arcEndX} ${-featWidth* (feature.doorHingeSide === 'left' ? 0.3 : -0.3)}`} stroke={doorStrokeColor} strokeDasharray="2,2" fill="none"/>);
-                     }
+                    if (feature.doorSwing?.includes('inward')) {
+                      elements.push(<path key={`${feature.id}-arc`} d={`M ${hingeX} 0 L ${hingeX} ${featWidth * 0.8} M ${hingeX} 0 A ${featWidth} ${featWidth} 0 0 ${feature.doorHingeSide === 'left' ? 1 : 0} ${arcEndX} ${featWidth * (feature.doorHingeSide === 'left' ? 0.3 : -0.3)}`} stroke={doorStrokeColor} strokeDasharray="2,2" fill="none" />);
+                    } else { // outward
+                      elements.push(<path key={`${feature.id}-arc`} d={`M ${hingeX} 0 L ${hingeX} ${-featWidth * 0.8} M ${hingeX} 0 A ${featWidth} ${featWidth} 0 0 ${feature.doorHingeSide === 'left' ? 0 : 1} ${arcEndX} ${-featWidth * (feature.doorHingeSide === 'left' ? 0.3 : -0.3)}`} stroke={doorStrokeColor} strokeDasharray="2,2" fill="none" />);
+                    }
                   }
                   break;
                 case 1: // East Wall (Right)
@@ -198,46 +143,46 @@ const RoomVisualizer = () => {
                   } else if (feature.type === 'window') {
                     elements.push(<rect key={`${feature.id}-rect`} x={vizWidth - (doorThickness * 1.5)} y={featX} width={doorThickness * 1.5} height={featWidth} fill="lightblue" stroke={windowStrokeColor} strokeWidth="1" />);
                   } else if (feature.type === 'door') {
-                    elements.push(<rect key={`${feature.id}-door`} x={vizWidth - (doorThickness/2)} y={featX} width={doorThickness} height={featWidth} fill={doorFillColor} stroke={doorStrokeColor} />);
-                     const hingeY = feature.doorHingeSide === 'left' ? featX : featX + featWidth; // 'left' means top hinge for vertical door
-                     const arcEndY = feature.doorHingeSide === 'left' ? featX + featWidth : featX;
-                     if (feature.doorSwing?.includes('inward')) { // inward means to the left for a right wall door
-                        elements.push(<path key={`${feature.id}-arc`} d={`M ${vizWidth} ${hingeY} L ${vizWidth - featWidth * 0.8} ${hingeY} M ${vizWidth} ${hingeY} A ${featWidth} ${featWidth} 0 0 ${feature.doorHingeSide === 'left' ? 1:0} ${vizWidth - featWidth * (feature.doorHingeSide === 'left' ? 0.3 : -0.3)} ${arcEndY}`} stroke={doorStrokeColor} strokeDasharray="2,2" fill="none"/>);
-                     } else { // outward
-                        elements.push(<path key={`${feature.id}-arc`} d={`M ${vizWidth} ${hingeY} L ${vizWidth + featWidth * 0.8} ${hingeY} M ${vizWidth} ${hingeY} A ${featWidth} ${featWidth} 0 0 ${feature.doorHingeSide === 'left' ? 0:1} ${vizWidth + featWidth * (feature.doorHingeSide === 'left' ? 0.3 : -0.3)} ${arcEndY}`} stroke={doorStrokeColor} strokeDasharray="2,2" fill="none"/>);
-                     }
+                    elements.push(<rect key={`${feature.id}-door`} x={vizWidth - (doorThickness / 2)} y={featX} width={doorThickness} height={featWidth} fill={doorFillColor} stroke={doorStrokeColor} />);
+                    const hingeY = feature.doorHingeSide === 'left' ? featX : featX + featWidth; // 'left' means top hinge for vertical door
+                    const arcEndY = feature.doorHingeSide === 'left' ? featX + featWidth : featX;
+                    if (feature.doorSwing?.includes('inward')) { // inward means to the left for a right wall door
+                      elements.push(<path key={`${feature.id}-arc`} d={`M ${vizWidth} ${hingeY} L ${vizWidth - featWidth * 0.8} ${hingeY} M ${vizWidth} ${hingeY} A ${featWidth} ${featWidth} 0 0 ${feature.doorHingeSide === 'left' ? 1 : 0} ${vizWidth - featWidth * (feature.doorHingeSide === 'left' ? 0.3 : -0.3)} ${arcEndY}`} stroke={doorStrokeColor} strokeDasharray="2,2" fill="none" />);
+                    } else { // outward
+                      elements.push(<path key={`${feature.id}-arc`} d={`M ${vizWidth} ${hingeY} L ${vizWidth + featWidth * 0.8} ${hingeY} M ${vizWidth} ${hingeY} A ${featWidth} ${featWidth} 0 0 ${feature.doorHingeSide === 'left' ? 0 : 1} ${vizWidth + featWidth * (feature.doorHingeSide === 'left' ? 0.3 : -0.3)} ${arcEndY}`} stroke={doorStrokeColor} strokeDasharray="2,2" fill="none" />);
+                    }
                   }
                   break;
                 case 2: // South Wall (Bottom)
                   if (feature.type === 'opening') {
                     elements.push(<line key={`${feature.id}-line`} x1={featX} y1={vizHeight} x2={featX + featWidth} y2={vizHeight} stroke={openingStrokeColor} strokeWidth="6" />);
                   } else if (feature.type === 'window') {
-                    elements.push(<rect key={`${feature.id}-rect`} x={featX} y={vizHeight - (doorThickness*1.5)} width={featWidth} height={doorThickness * 1.5} fill="lightblue" stroke={windowStrokeColor} strokeWidth="1" />);
+                    elements.push(<rect key={`${feature.id}-rect`} x={featX} y={vizHeight - (doorThickness * 1.5)} width={featWidth} height={doorThickness * 1.5} fill="lightblue" stroke={windowStrokeColor} strokeWidth="1" />);
                   } else if (feature.type === 'door') {
-                    elements.push(<rect key={`${feature.id}-door`} x={featX} y={vizHeight - (doorThickness/2)} width={featWidth} height={doorThickness} fill={doorFillColor} stroke={doorStrokeColor} />);
+                    elements.push(<rect key={`${feature.id}-door`} x={featX} y={vizHeight - (doorThickness / 2)} width={featWidth} height={doorThickness} fill={doorFillColor} stroke={doorStrokeColor} />);
                     const hingeX = feature.doorHingeSide === 'left' ? featX : featX + featWidth;
                     const arcEndX = feature.doorHingeSide === 'left' ? featX + featWidth : featX;
-                     if (feature.doorSwing?.includes('inward')) { // inward means upward for south wall
-                        elements.push(<path key={`${feature.id}-arc`} d={`M ${hingeX} ${vizHeight} L ${hingeX} ${vizHeight - featWidth * 0.8} M ${hingeX} ${vizHeight} A ${featWidth} ${featWidth} 0 0 ${feature.doorHingeSide === 'left' ? 0:1} ${arcEndX} ${vizHeight - featWidth* (feature.doorHingeSide === 'left' ? 0.3 : -0.3)}`} stroke={doorStrokeColor} strokeDasharray="2,2" fill="none"/>);
-                     } else { // outward
-                        elements.push(<path key={`${feature.id}-arc`} d={`M ${hingeX} ${vizHeight} L ${hingeX} ${vizHeight + featWidth * 0.8} M ${hingeX} ${vizHeight} A ${featWidth} ${featWidth} 0 0 ${feature.doorHingeSide === 'left' ? 1:0} ${arcEndX} ${vizHeight + featWidth* (feature.doorHingeSide === 'left' ? 0.3 : -0.3)}`} stroke={doorStrokeColor} strokeDasharray="2,2" fill="none"/>);
-                     }
+                    if (feature.doorSwing?.includes('inward')) { // inward means upward for south wall
+                      elements.push(<path key={`${feature.id}-arc`} d={`M ${hingeX} ${vizHeight} L ${hingeX} ${vizHeight - featWidth * 0.8} M ${hingeX} ${vizHeight} A ${featWidth} ${featWidth} 0 0 ${feature.doorHingeSide === 'left' ? 0 : 1} ${arcEndX} ${vizHeight - featWidth * (feature.doorHingeSide === 'left' ? 0.3 : -0.3)}`} stroke={doorStrokeColor} strokeDasharray="2,2" fill="none" />);
+                    } else { // outward
+                      elements.push(<path key={`${feature.id}-arc`} d={`M ${hingeX} ${vizHeight} L ${hingeX} ${vizHeight + featWidth * 0.8} M ${hingeX} ${vizHeight} A ${featWidth} ${featWidth} 0 0 ${feature.doorHingeSide === 'left' ? 1 : 0} ${arcEndX} ${vizHeight + featWidth * (feature.doorHingeSide === 'left' ? 0.3 : -0.3)}`} stroke={doorStrokeColor} strokeDasharray="2,2" fill="none" />);
+                    }
                   }
                   break;
                 case 3: // West Wall (Left)
-                   if (feature.type === 'opening') {
+                  if (feature.type === 'opening') {
                     elements.push(<line key={`${feature.id}-line`} x1="0" y1={featX} x2="0" y2={featX + featWidth} stroke={openingStrokeColor} strokeWidth="6" />);
                   } else if (feature.type === 'window') {
                     elements.push(<rect key={`${feature.id}-rect`} x="0" y={featX} width={doorThickness * 1.5} height={featWidth} fill="lightblue" stroke={windowStrokeColor} strokeWidth="1" />);
                   } else if (feature.type === 'door') {
-                    elements.push(<rect key={`${feature.id}-door`} x={-(doorThickness/2)} y={featX} width={doorThickness} height={featWidth} fill={doorFillColor} stroke={doorStrokeColor} />);
+                    elements.push(<rect key={`${feature.id}-door`} x={-(doorThickness / 2)} y={featX} width={doorThickness} height={featWidth} fill={doorFillColor} stroke={doorStrokeColor} />);
                     const hingeY = feature.doorHingeSide === 'left' ? featX : featX + featWidth; // 'left' means top hinge
                     const arcEndY = feature.doorHingeSide === 'left' ? featX + featWidth : featX;
-                     if (feature.doorSwing?.includes('inward')) { // inward means to the right
-                        elements.push(<path key={`${feature.id}-arc`} d={`M 0 ${hingeY} L ${featWidth * 0.8} ${hingeY} M 0 ${hingeY} A ${featWidth} ${featWidth} 0 0 ${feature.doorHingeSide === 'left' ? 0:1} ${featWidth * (feature.doorHingeSide === 'left' ? 0.3 : -0.3)} ${arcEndY}`} stroke={doorStrokeColor} strokeDasharray="2,2" fill="none"/>);
-                     } else { // outward
-                        elements.push(<path key={`${feature.id}-arc`} d={`M 0 ${hingeY} L ${-featWidth * 0.8} ${hingeY} M 0 ${hingeY} A ${featWidth} ${featWidth} 0 0 ${feature.doorHingeSide === 'left' ? 1:0} ${-featWidth * (feature.doorHingeSide === 'left' ? 0.3 : -0.3)} ${arcEndY}`} stroke={doorStrokeColor} strokeDasharray="2,2" fill="none"/>);
-                     }
+                    if (feature.doorSwing?.includes('inward')) { // inward means to the right
+                      elements.push(<path key={`${feature.id}-arc`} d={`M 0 ${hingeY} L ${featWidth * 0.8} ${hingeY} M 0 ${hingeY} A ${featWidth} ${featWidth} 0 0 ${feature.doorHingeSide === 'left' ? 0 : 1} ${featWidth * (feature.doorHingeSide === 'left' ? 0.3 : -0.3)} ${arcEndY}`} stroke={doorStrokeColor} strokeDasharray="2,2" fill="none" />);
+                    } else { // outward
+                      elements.push(<path key={`${feature.id}-arc`} d={`M 0 ${hingeY} L ${-featWidth * 0.8} ${hingeY} M 0 ${hingeY} A ${featWidth} ${featWidth} 0 0 ${feature.doorHingeSide === 'left' ? 1 : 0} ${-featWidth * (feature.doorHingeSide === 'left' ? 0.3 : -0.3)} ${arcEndY}`} stroke={doorStrokeColor} strokeDasharray="2,2" fill="none" />);
+                    }
                   }
                   break;
                 default:
@@ -256,7 +201,7 @@ const RoomVisualizer = () => {
                 const highPressureFill = "rgba(255, 0, 0, 0.3)";
                 if (dimension === 'Length') {
                   if (order === 1) modeRects.push(<rect key="l1" x="0" y={vizHeight / 4} width={vizWidth} height={vizHeight / 2} fill={highPressureFill} />);
-                  else if (order === 2) {modeRects.push(<rect key="l2a" x="0" y={vizHeight / 8} width={vizWidth} height={vizHeight / 4} fill={highPressureFill} />); modeRects.push(<rect key="l2b" x="0" y={vizHeight * 5 / 8} width={vizWidth} height={vizHeight / 4} fill={highPressureFill} />); }
+                  else if (order === 2) { modeRects.push(<rect key="l2a" x="0" y={vizHeight / 8} width={vizWidth} height={vizHeight / 4} fill={highPressureFill} />); modeRects.push(<rect key="l2b" x="0" y={vizHeight * 5 / 8} width={vizWidth} height={vizHeight / 4} fill={highPressureFill} />); }
                 } else if (dimension === 'Width') {
                   if (order === 1) modeRects.push(<rect key="w1" x={vizWidth / 4} y="0" width={vizWidth / 2} height={vizHeight} fill={highPressureFill} />);
                   else if (order === 2) { modeRects.push(<rect key="w2a" x={vizWidth / 8} y="0" width={vizWidth / 4} height={vizHeight} fill={highPressureFill} />); modeRects.push(<rect key="w2b" x={vizWidth * 5 / 8} y="0" width={vizWidth / 4} height={vizHeight} fill={highPressureFill} />); }
@@ -267,21 +212,21 @@ const RoomVisualizer = () => {
           )}
 
           {/* Speaker Layer */}
-          {finalSpeakerPositions.map((speaker) => (
-            <g 
-              key={speaker.id} 
+          {finalSpeakerPositions && finalSpeakerPositions.length > 0 && finalSpeakerPositions.map((speaker) => (
+            <g
+              key={speaker.id}
               transform={`translate(${speaker.x * currentScale}, ${speaker.y * currentScale})`}
-              onMouseDown={(e) => handleMouseDown(e, speaker.id)}
-              style={{ cursor: 'grab' }}
+            // onMouseDown removed
+            // style={{ cursor: 'grab' }} removed
             >
-              <circle 
+              <circle
                 r={speaker.isListeningPosition ? 8 : 6} // Slightly larger radius for easier grabbing
-                fill={speaker.isListeningPosition ? "blue" : (speaker.note && speaker.note.includes("Height") ? "lightgreen" : "red")} 
+                fill={speaker.isListeningPosition ? "blue" : (speaker.note && speaker.note.includes("Height") ? "lightgreen" : "red")}
               />
-              <text 
-                x={speaker.isListeningPosition ? 10 : 8} 
-                y="4" 
-                fontSize="10" 
+              <text
+                x={speaker.isListeningPosition ? 10 : 8}
+                y="4"
+                fontSize="10"
                 fill="black"
                 style={{ pointerEvents: 'none' }} // Make text non-interactive for dragging
               >

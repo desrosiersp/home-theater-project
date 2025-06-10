@@ -58,10 +58,12 @@ The project has a solid foundational structure with many core MVP features imple
   - Implement Image Export of Room Layout (SVG to PNG/SVG).
   - Refine `loadDesign` in `StorageContext.js` for robustness (unit consistency, data mapping).
   - Add functionality to overwrite existing saved designs.
+  - Implement Shareable Weblinks: Generate URLs that encode the design configuration to auto-populate the planner. This facilitates sharing on platforms like Reddit for feedback. (Consider URL length and potential backend for complex designs).
+  - Implement "Print Report": Add functionality to generate a printable summary/report of the current design, accessible from the final wizard step (Review & Save/Load).
 - **"Build Blogs" Page (Content: Community Builds):**
   - Implement full loading logic for community build data into application contexts (within `CommunityBuildsTab.js` or related components) if the "load to planner" feature is re-introduced.
   - Implement "View Details" functionality, linking from `CommunityBuildCard.js` to a new `BuildBlogDetailPage.js`.
-  - Consider adding functionality for users to submit or share their own builds (longer term).
+  - Develop "Publish Build" Functionality (with User Accounts): Implement user authentication (logins) to allow users to manage and publish their designs as community builds. This includes the ability to upload images for their setups and would require a backend with user management, database, and storage integration (longer term).
 - **General UI/UX and Refinements:**
   - Overall styling polish and consistency.
   - Comprehensive error handling and input validation.

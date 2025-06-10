@@ -19,9 +19,9 @@ export const RoomProvider = ({ children }) => {
   });
   const [roomName, setRoomName] = useState('My Home Theater'); // Default room name
   const [selectedModeForVisualization, setSelectedModeForVisualization] = useState({ dimension: null, order: null });
-  const [listenerEarHeightMeters, setListenerEarHeightMeters] = useState(1.0); 
-  const [frontSpeakerHeightMeters, setFrontSpeakerHeightMeters] = useState(1.2); 
-  const [manualSpeakerPositions, setManualSpeakerPositions] = useState({}); // { [speakerId]: {x, y, z (optional)} }
+  const [listenerEarHeightMeters, setListenerEarHeightMeters] = useState(1.0);
+  const [frontSpeakerHeightMeters, setFrontSpeakerHeightMeters] = useState(1.2);
+  // const [manualSpeakerPositions, setManualSpeakerPositions] = useState({}); // Removed
   const [wallFeatures, setWallFeatures] = useState([]); // { id, wallIndex, type, startOffset, width, doorSwing?, doorHingeSide? }
 
   const toggleUnitSystem = useCallback(() => {
@@ -36,16 +36,7 @@ export const RoomProvider = ({ children }) => {
     setSelectedModeForVisualization({ dimension, order });
   }, []);
 
-  const updateManualSpeakerPosition = useCallback((speakerId, newPosition) => { // newPosition = {x, y} or {x,y,z}
-    setManualSpeakerPositions(prev => ({
-      ...prev,
-      [speakerId]: { ...prev[speakerId], ...newPosition } // Merge, allowing partial updates e.g. just x,y
-    }));
-  }, []);
-
-  const resetManualSpeakerPositions = useCallback(() => {
-    setManualSpeakerPositions({});
-  }, []);
+  // updateManualSpeakerPosition and resetManualSpeakerPositions removed
 
   // Wall Feature Management
   const addWallFeature = useCallback((featureData) => {
@@ -111,8 +102,8 @@ export const RoomProvider = ({ children }) => {
     toggleUnitSystem,
     roomName,
     updateRoomName,
-    roomDimensionsMeters, 
-    getDimensionsInCurrentUnit, 
+    roomDimensionsMeters,
+    getDimensionsInCurrentUnit,
     updateRoomDimension,
     selectedModeForVisualization,
     updateSelectedModeForVisualization,
@@ -120,9 +111,9 @@ export const RoomProvider = ({ children }) => {
     updateListenerEarHeight,
     frontSpeakerHeightMeters,
     updateFrontSpeakerHeight,
-    manualSpeakerPositions,
-    updateManualSpeakerPosition,
-    resetManualSpeakerPositions,
+    // manualSpeakerPositions, // Removed
+    // updateManualSpeakerPosition, // Removed
+    // resetManualSpeakerPositions, // Removed
     wallFeatures,
     addWallFeature,
     updateWallFeature,
